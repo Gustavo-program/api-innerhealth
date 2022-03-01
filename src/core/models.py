@@ -1,6 +1,5 @@
 from django.db import models
-from authentication.models import InnerHealthAbstractClass
-from django.contrib.auth.models import User
+from authentication.models import InnerHealthAbstractClass, User
 
 
 class Especiality(InnerHealthAbstractClass):

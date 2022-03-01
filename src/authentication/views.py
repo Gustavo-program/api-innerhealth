@@ -1,5 +1,5 @@
+import email
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
@@ -11,6 +11,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from .serializers import UserSerializer
 from core.models import Doctor, Patient
+from .models import User
 
 
 class UserListView(ListAPIView):
@@ -34,11 +35,10 @@ class LoginAPIView(APIView):
     permission_classes = (AllowAny, )
 
     def post(self, request):
-        username = request.data.get("username", None)
+        email = request.data.get("email", None)
         password = request.data.get("password", None)
-        print(password, username)
 
-        if username in ['', None]:
+        if email in ['', None]:
             return Response({"detail": "No se proporciono un nombre de usuario"},
                             HTTP_400_BAD_REQUEST)
 
@@ -46,7 +46,7 @@ class LoginAPIView(APIView):
             return Response({"detail": "No se proporciono una contrasenha de usuario"},
                             HTTP_400_BAD_REQUEST)
 
-        user = authenticate(username=username, password=password)
+        user = authenticate(email=email, password=password)
 
         if not user:
             return Response({"detail": "Se proporcionaron credenciales invalidas"},
@@ -91,16 +91,9 @@ class SignUpAPIView(APIView):
     permission_classes = (AllowAny, )
 
     def post(self, request):
-        username = request.data.get("username", None)
-        first_name = request.data.get("first_name", "")
-        last_name = request.data.get("last_name", "")
         email = request.data.get("email", None)
         password = request.data.get("password", None)
         is_staff = request.data.get("is_staff", False)
-
-        if username in ['', None]:
-            return Response({"detail": "No se proporciono un nombre de usuario"},
-                            HTTP_400_BAD_REQUEST)
 
         if email in ['', None]:
             return Response({"detail": "No se proporciono un email de usuario"},
@@ -114,21 +107,14 @@ class SignUpAPIView(APIView):
             return Response({"detail": "El password debe tener longitud de al menos 6 caracteres"},
                             HTTP_400_BAD_REQUEST)
 
-        if User.objects.filter(username=username):
+        if User.objects.filter(email=email):
             return Response({"detail": "El nombre de usuario ya ha sido tomado"},
                             HTTP_400_BAD_REQUEST)
 
-        if User.objects.filter(email=email):
-            return Response({"detail": "El email de usuario ya ha sido tomado"},
-                            HTTP_400_BAD_REQUEST)
-
         user = User.objects.create_user(
-            username=username,
             email=email,
             password=password,
             is_staff=is_staff,
-            first_name=first_name,
-            last_name=last_name,
         )
 
         user_data = {

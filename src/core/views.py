@@ -126,8 +126,29 @@ class AppointmentListView(ListCreateAPIView):
         "$patient__user__last_name",
     ]
 
+    def post(self, request, *args, **kwargs):
+        try:
+            response = super(AppointmentListView, self).post(request)
+            return Response(data=response.data, status=HTTP_201_CREATED)
+        except Exception as e:
+            return Response(data={"detail": str(e)}, status=HTTP_400_BAD_REQUEST)
+
 
 class AppointmentDetailView(RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated, )
     queryset = Appointment.objects.filter(is_active=True)
     serializer_class = AppointmentSerialiazer
+
+    def put(self, request, pk):
+        try:
+            response = super(AppointmentDetailView, self).put(request)
+            return Response(data=response.data, status=HTTP_201_CREATED)
+        except Exception as e:
+            return Response(data={"detail": str(e)}, status=HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk):
+        try:
+            response = super(AppointmentDetailView, self).patch(request)
+            return Response(data=response.data, status=HTTP_201_CREATED)
+        except Exception as e:
+            return Response(data={"detail": str(e)}, status=HTTP_400_BAD_REQUEST)
